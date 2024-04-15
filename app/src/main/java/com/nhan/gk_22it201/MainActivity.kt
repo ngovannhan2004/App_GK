@@ -1,72 +1,70 @@
 package com.nhan.gk_22it201
 
-import adapters.StudentAdapter
+import adapters.SPAdapter
 import adapters.StudentAdapterListener
 import adapters.StudentButtonRemoveListener
-import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.TextUtils
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.nhan.gk_22it201.databinding.ActivityMainBinding
-import helper.Helper
-import models.Student
+import models.SPs
 
 
 public lateinit var binding: ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), StudentAdapterListener, StudentButtonRemoveListener {
-
-    private lateinit var editTextMsv: EditText
-    private lateinit var editTextHoTen: EditText
-    private lateinit var showEmailCreate: TextView  // Khởi tạo biến
-    private lateinit var buttonTaoEmail: Button
+    private lateinit var edtSP: EditText
+    private lateinit var edtSoLuong: EditText
+    private lateinit var showSP: TextView  // Khởi tạo biến
+    private lateinit var showSL: TextView  // Khởi tạo biến
+    private lateinit var buttonThemSP: Button
     private lateinit var buttonXem: Button
     private lateinit var recyclerView: RecyclerView
     private var stateHideRecyclerView = true
-    private val students = ArrayList<Student>()
-    private val studentAdapter = StudentAdapter(students, this, this)
+    private val sPs = ArrayList<SPs>()
+    private var counter = 1
+    private var totalQuantity = 0
+    private val spAdapter = SPAdapter(sPs, this, this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        editTextMsv = binding.editTextMsv
-        editTextMsv.setText("22IT220")
-        editTextHoTen = binding.editTextHoTen
-        editTextHoTen.setText("Ngô Văn Nhân")
-        showEmailCreate = binding.showEmailCreate
-        buttonTaoEmail = binding.buttonTaoEmail
+        edtSP = binding.edtSP
+        edtSoLuong = binding.edtSoLuong
+        showSP = binding.showSP
+        showSL = binding.showSL
+        buttonThemSP = binding.buttonThemSP
         buttonXem = binding.buttonXem
         recyclerView = binding.recyclerView
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = studentAdapter
+        recyclerView.adapter = spAdapter
         if (stateHideRecyclerView) {
             recyclerView.visibility = View.GONE
         }
 
-        buttonTaoEmail.setOnClickListener {
-            val msv = editTextMsv.text.toString()
-            val hoTen = editTextHoTen.text.toString()
-            if (validateInput(msv, hoTen)) {
-                val name = Helper.normalizeName(hoTen)
-                val email = Helper.createEmail(name, msv)
-                showEmailCreate.text = "Email là: " + email
-                val student = Student(name, msv, email)
-                createNewStudent(student)
+        buttonThemSP.setOnClickListener {
+            val ten = edtSP.text.toString()
+            val soluong = edtSoLuong.text.toString()
+
+            if (validateInput(ten, soluong)) {
+                val quantity = soluong.toInt()
+                totalQuantity += quantity
+                showSP.text = "Tên SP là: " + ten
+                showSL.text = " Tổng Số Lượng: " +totalQuantity
+                val sp = SPs(counter, ten, soluong)
+                createNewSP(sp)
+                edtSP.text.clear()
+                edtSoLuong.text.clear()
+                counter++
             }
         }
         buttonXem.setOnClickListener {
@@ -81,13 +79,13 @@ class MainActivity : AppCompatActivity(), StudentAdapterListener, StudentButtonR
 
     }
 
-    private fun validateInput(msv: String, hoTen: String): Boolean {
-        if (msv.isEmpty()) {
-            showMessage("Vui lòng nhập mã sinh viên");
+    private fun validateInput(ten: String, soluong: String): Boolean {
+        if (ten.isEmpty()) {
+            showMessage("Vui lòng nhập tên SP");
             return false
         }
-        if (hoTen.isEmpty()) {
-            showMessage("Vui lòng nhập họ tên");
+        if (soluong.isEmpty()) {
+            showMessage("Vui lòng nhập số lượng");
             return false
         }
         return true
@@ -97,31 +95,19 @@ class MainActivity : AppCompatActivity(), StudentAdapterListener, StudentButtonR
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onStudentClick(student: Student) {
+    override fun onStudentClick(student: SPs) {
     }
 
-    override fun onStudentRemove(student: Student) {
-        this.students.remove(student)
-        studentAdapter.notifyDataSetChanged()
-    }
+    override fun onStudentRemove(sPs: SPs) {
+        this.sPs.remove(sPs)
+        spAdapter.notifyDataSetChanged()
 
-    private fun checkExistByMsv(msv: String): Boolean {
-        for (student in students) {
-            if (student.msv == msv) {
-                return true
-            }
-        }
-        return false
     }
+    private fun createNewSP(sPs: SPs) {
 
-    private fun createNewStudent(student: Student) {
-        if (!checkExistByMsv(student.msv)) {
-            showMessage("Tạo sinh viên thành công")
-            students.add(student)
-            studentAdapter.notifyDataSetChanged()
-        } else {
-            showMessage("Sinh viên đã tồn tại")
-        }
+        showMessage("Thêm SP thành công")
+        this.sPs.add(sPs)
+        spAdapter.notifyDataSetChanged()
     }
 
 
